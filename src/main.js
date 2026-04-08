@@ -28,6 +28,7 @@ const BUILDINGS = [
 // ============================================
 // THREE.JS
 // ============================================
+const texLoader = new THREE.TextureLoader()
 const canvas = document.getElementById('c')
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0x87CEEB) // sky blue
@@ -205,11 +206,6 @@ const skyMat = new THREE.ShaderMaterial({
   `,
 })
 scene.add(new THREE.Mesh(skyGeo, skyMat))
-
-// ============================================
-// TEXTURE LOADER (before anything that loads textures)
-// ============================================
-const texLoader = new THREE.TextureLoader()
 
 // ============================================
 // PLAYER — bread cat
