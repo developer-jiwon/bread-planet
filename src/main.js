@@ -87,6 +87,95 @@ REGIONS.forEach((r) => {
   scene.add(mesh)
 })
 
+// Grass patches (green spots on ground)
+for (let i = 0; i < 30; i++) {
+  const gGeo = new THREE.CircleGeometry(3 + Math.random() * 8, 16)
+  const gMat = new THREE.MeshStandardMaterial({ color: 0x8DB580, roughness: 0.9, transparent: true, opacity: 0.3 })
+  const gMesh = new THREE.Mesh(gGeo, gMat)
+  gMesh.rotation.x = -Math.PI / 2
+  const angle = Math.random() * Math.PI * 2
+  const dist = 10 + Math.random() * 80
+  gMesh.position.set(Math.cos(angle) * dist, 0.015, Math.sin(angle) * dist)
+  scene.add(gMesh)
+}
+
+// ============================================
+// ROADS — connect buildings
+// ============================================
+const ROAD_COLOR = 0x9E8E7E
+const ROAD_WIDTH = 3
+
+function makeRoad(x1, z1, x2, z2) {
+  const dx = x2 - x1, dz = z2 - z1
+  const len = Math.sqrt(dx*dx + dz*dz)
+  const angle = Math.atan2(dx, dz)
+
+  const geo = new THREE.PlaneGeometry(ROAD_WIDTH, len)
+  const mat = new THREE.MeshStandardMaterial({ color: ROAD_COLOR, roughness: 0.95 })
+  const road = new THREE.Mesh(geo, mat)
+  road.rotation.x = -Math.PI / 2
+  road.rotation.z = -angle
+  road.position.set((x1+x2)/2, 0.03, (z1+z2)/2)
+  road.receiveShadow = true
+  scene.add(road)
+
+  // Center line (dashed effect — small yellow planes)
+  const segments = Math.floor(len / 4)
+  for (let i = 0; i < segments; i++) {
+    const t = (i + 0.3) / segments
+    const lGeo = new THREE.PlaneGeometry(0.3, 1.5)
+    const lMat = new THREE.MeshBasicMaterial({ color: 0xFFE4A0 })
+    const line = new THREE.Mesh(lGeo, lMat)
+    line.rotation.x = -Math.PI / 2
+    line.rotation.z = -angle
+    line.position.set(x1 + dx * t, 0.035, z1 + dz * t)
+    scene.add(line)
+  }
+  return { x1, z1, x2, z2, angle, len }
+}
+
+// Main roads connecting buildings
+const roads = []
+roads.push(makeRoad(0, 0, -10, 8))       // oven → french
+roads.push(makeRoad(0, 0, 14, -8))        // oven → japan
+roads.push(makeRoad(0, 0, 28, 18))        // oven → italian
+roads.push(makeRoad(0, 0, -25, 20))       // oven → korean
+roads.push(makeRoad(0, 0, 40, -25))       // oven → windmill
+roads.push(makeRoad(-10, 8, -25, 20))     // french → korean
+roads.push(makeRoad(14, -8, 28, 18))      // japan → italian
+roads.push(makeRoad(14, -8, 40, -25))     // japan → windmill
+// Ring road
+roads.push(makeRoad(-25, 20, -40, 35))
+roads.push(makeRoad(28, 18, 45, 30))
+roads.push(makeRoad(40, -25, 50, -40))
+
+// ============================================
+// VEHICLES — drive along roads
+// ============================================
+const vehicles = []
+const vehicleAssets = ['bread-truck', 'croissant-car', 'milk-cart']
+
+function spawnVehicle(roadIdx) {
+  const r = roads[roadIdx % roads.length]
+  const asset = vehicleAssets[Math.floor(Math.random() * vehicleAssets.length)]
+  const tex = texLoader.load(`/assets/${asset}.png`)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.05, side: THREE.DoubleSide })
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3, 2), mat)
+  mesh.position.y = 1.2
+  scene.add(mesh)
+  vehicles.push({
+    mesh,
+    road: r,
+    t: Math.random(), // position along road 0-1
+    speed: 0.02 + Math.random() * 0.03,
+    dir: Math.random() > 0.5 ? 1 : -1,
+  })
+}
+
+// Spawn vehicles on roads
+for (let i = 0; i < 8; i++) spawnVehicle(i)
+
 // Edge ring (crust)
 const crustGeo = new THREE.RingGeometry(MAP_R - 2, MAP_R, 64)
 const crustMat = new THREE.MeshStandardMaterial({ color: 0xC68B59, roughness: 0.7 })
@@ -241,25 +330,49 @@ REGIONS.forEach((r) => {
   }
 })
 
-// Trees sway, baskets/clouds/bread are static
-for (let i = 0; i < 50; i++) {
+// TREES — mix of types, dense
+const treeTypes = ['cherry-blossom-tree', 'big-tree', 'pine-tree']
+for (let i = 0; i < 60; i++) {
   const angle = Math.random() * Math.PI * 2
-  const dist = 8 + Math.random() * 120
-  makeSway('cherry-blossom-tree', Math.cos(angle) * dist, Math.sin(angle) * dist, 5 + Math.random() * 4, {})
-}
-for (let i = 0; i < 30; i++) {
-  const angle = Math.random() * Math.PI * 2
-  const dist = 8 + Math.random() * 120
-  const deco = ['bread-basket', 'flour-cloud', 'steam-puff'][Math.floor(Math.random() * 3)]
-  makeStatic(deco, Math.cos(angle) * dist, Math.sin(angle) * dist, 2 + Math.random() * 2, {})
+  const dist = 8 + Math.random() * 100
+  const tree = treeTypes[Math.floor(Math.random() * treeTypes.length)]
+  makeSway(tree, Math.cos(angle) * dist, Math.sin(angle) * dist, 5 + Math.random() * 5, {})
 }
 
-// Ground bread — tiny, static, scattered
-for (let i = 0; i < 40; i++) {
+// FLOWERS — lots, varied, small
+const flowerTypes = ['flower-red', 'flower-yellow', 'flower-purple', 'flower-pink', 'flower-bush']
+for (let i = 0; i < 80; i++) {
   const angle = Math.random() * Math.PI * 2
-  const dist = 15 + Math.random() * 100
-  const bread = ['croissant-projectile', 'pretzel-projectile', 'melon-pan-projectile', 'baguette-projectile'][Math.floor(Math.random() * 4)]
-  makeStatic(bread, Math.cos(angle) * dist, Math.sin(angle) * dist, 1.5 + Math.random() * 1.5, {})
+  const dist = 5 + Math.random() * 90
+  const flower = flowerTypes[Math.floor(Math.random() * flowerTypes.length)]
+  makeSway(flower, Math.cos(angle) * dist, Math.sin(angle) * dist, 1 + Math.random() * 2, {})
+}
+
+// STREET FURNITURE — along roads
+const streetItems = ['lamp-post', 'bench', 'traffic-light', 'mailbox', 'signpost']
+roads.forEach((r) => {
+  // Place items along each road
+  for (let i = 0; i < 3; i++) {
+    const t = 0.2 + Math.random() * 0.6
+    const x = r.x1 + (r.x2 - r.x1) * t
+    const z = r.z1 + (r.z2 - r.z1) * t
+    // Offset to side of road
+    const perpX = -(r.z2 - r.z1) / r.len * 3
+    const perpZ = (r.x2 - r.x1) / r.len * 3
+    const side = Math.random() > 0.5 ? 1 : -1
+    const item = streetItems[Math.floor(Math.random() * streetItems.length)]
+    const size = item === 'lamp-post' ? 4 : item === 'traffic-light' ? 3.5 : 2
+    makeStatic(item, x + perpX * side, z + perpZ * side, size, {})
+  }
+})
+
+// NATURE EXTRAS
+for (let i = 0; i < 20; i++) {
+  const angle = Math.random() * Math.PI * 2
+  const dist = 10 + Math.random() * 80
+  const item = ['mushroom', 'rock', 'fountain', 'bread-basket'][Math.floor(Math.random() * 4)]
+  const size = item === 'fountain' ? 4 : item === 'rock' ? 2 : 2.5
+  makeStatic(item, Math.cos(angle) * dist, Math.sin(angle) * dist, size, {})
 }
 
 // Creatures — sway, big, named
@@ -597,6 +710,17 @@ function animate() {
     if (d < r.r) region = r
   })
   locationEl.textContent = region ? region.name : '빵별'
+
+  // --- VEHICLES drive along roads ---
+  vehicles.forEach((v) => {
+    v.t += v.speed * dt * v.dir
+    if (v.t > 1) { v.t = 0; v.dir = 1 }
+    if (v.t < 0) { v.t = 1; v.dir = -1 }
+    const r = v.road
+    v.mesh.position.x = r.x1 + (r.x2 - r.x1) * v.t
+    v.mesh.position.z = r.z1 + (r.z2 - r.z1) * v.t
+    v.mesh.lookAt(camera.position.x, v.mesh.position.y, camera.position.z)
+  })
 
   // --- OVEN GLOW flicker ---
   ovenGlow.intensity = 2 + Math.sin(t * 3) * 0.3
