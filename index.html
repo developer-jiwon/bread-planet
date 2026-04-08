@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bread Planet — 빵별</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Loading -->
+  <div id="loading">
+    <div class="loading-icon">🍞</div>
+    <div class="loading-text">빵별 굽는 중...</div>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="planet-canvas"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div id="location-name">빵별</div>
+    <div id="coordinates"></div>
+    <div id="bread-selector">
+      <div class="bread-option active" data-bread="baguette" title="바게트">🥖</div>
+      <div class="bread-option" data-bread="croissant" title="크루아상">🥐</div>
+      <div class="bread-option" data-bread="melon-pan" title="멜론빵">🍈</div>
+      <div class="bread-option" data-bread="pretzel" title="프레첼">🥨</div>
+    </div>
+  </div>
+
+  <!-- Info panel (appears on click) -->
+  <div id="info-panel" class="hidden">
+    <div id="info-close">×</div>
+    <h3 id="info-title"></h3>
+    <p id="info-desc"></p>
+  </div>
+
+  <!-- Crosshair -->
+  <div id="crosshair">+</div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
