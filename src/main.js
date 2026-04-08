@@ -163,21 +163,13 @@ function makeStatic(asset, x, z, s, data) {
   scene.add(mesh)
   allStatic.push(mesh)
 
-  // Add shadow blob under building
-  const shGeo = new THREE.CircleGeometry(s * 0.4, 16)
-  const shMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.1 })
+  // Small shadow under building
+  const shGeo = new THREE.CircleGeometry(s * 0.3, 16)
+  const shMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.08 })
   const sh = new THREE.Mesh(shGeo, shMat)
   sh.rotation.x = -Math.PI / 2
   sh.position.set(x, 0.01, z)
   scene.add(sh)
-
-  // Add a simple box behind the sprite for depth
-  const boxGeo = new THREE.BoxGeometry(s * 0.7, s * 0.8, s * 0.4)
-  const boxMat = new THREE.MeshStandardMaterial({ color: 0xE8D5B0, roughness: 0.9, transparent: true, opacity: 0.3 })
-  const box = new THREE.Mesh(boxGeo, boxMat)
-  box.position.set(x, s * 0.4, z - s * 0.15)
-  box.receiveShadow = true
-  scene.add(box)
 
   if (data?.name) {
     mesh.userData.interactRadius = s * 0.7
