@@ -207,9 +207,13 @@ const skyMat = new THREE.ShaderMaterial({
 scene.add(new THREE.Mesh(skyGeo, skyMat))
 
 // ============================================
-// PLAYER — bread cat
+// TEXTURE LOADER (before anything that loads textures)
 // ============================================
 const texLoader = new THREE.TextureLoader()
+
+// ============================================
+// PLAYER — bread cat
+// ============================================
 const playerGroup = new THREE.Group()
 
 // Body placeholder (will be replaced by sprite)
