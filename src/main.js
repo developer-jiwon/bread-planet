@@ -584,9 +584,15 @@ function initAudio() {
 // LOADING
 // ============================================
 const loadingEl = document.getElementById('loading')
-texLoader.manager.onLoad = () => {
-  gsap.to(loadingEl, { opacity: 0, duration: 0.8, delay: 0.5, onComplete: () => loadingEl?.remove() })
+function dismissLoading() {
+  if (!loadingEl || loadingEl.dataset.done) return
+  loadingEl.dataset.done = '1'
+  gsap.to(loadingEl, { opacity: 0, duration: 0.8, delay: 0.3, onComplete: () => loadingEl?.remove() })
 }
+texLoader.manager.onLoad = dismissLoading
+texLoader.manager.onError = (url) => { console.warn('Failed to load:', url) }
+// Fallback: dismiss after 4 seconds no matter what
+setTimeout(dismissLoading, 4000)
 
 // ============================================
 // ANIMATION
