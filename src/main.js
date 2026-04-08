@@ -143,12 +143,54 @@ playerGroup.position.set(0, 0, 8)
 scene.add(playerGroup)
 
 // ============================================
-// BUILDINGS & DECORATIONS (billboards)
+// OBJECT CREATION
 // ============================================
-const allBillboards = []
+const allBillboards = [] // things that sway (nature)
+const allStatic = [] // things that DON'T sway (buildings)
 const interactables = []
+const buildingMeshes = [] // for entering
 
-function makeBillboard(asset, x, z, s, data) {
+// STATIC billboard (buildings, landmarks) — NO wiggle
+function makeStatic(asset, x, z, s, data) {
+  const tex = texLoader.load(`/assets/${asset}.png`)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const geo = new THREE.PlaneGeometry(s, s)
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.05, side: THREE.DoubleSide })
+  const mesh = new THREE.Mesh(geo, mat)
+  mesh.position.set(x, s / 2, z)
+  mesh.userData = data || {}
+  mesh.castShadow = true
+  scene.add(mesh)
+  allStatic.push(mesh)
+
+  // Add shadow blob under building
+  const shGeo = new THREE.CircleGeometry(s * 0.4, 16)
+  const shMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.1 })
+  const sh = new THREE.Mesh(shGeo, shMat)
+  sh.rotation.x = -Math.PI / 2
+  sh.position.set(x, 0.01, z)
+  scene.add(sh)
+
+  // Add a simple box behind the sprite for depth
+  const boxGeo = new THREE.BoxGeometry(s * 0.7, s * 0.8, s * 0.4)
+  const boxMat = new THREE.MeshStandardMaterial({ color: 0xE8D5B0, roughness: 0.9, transparent: true, opacity: 0.3 })
+  const box = new THREE.Mesh(boxGeo, boxMat)
+  box.position.set(x, s * 0.4, z - s * 0.15)
+  box.receiveShadow = true
+  scene.add(box)
+
+  if (data?.name) {
+    mesh.userData.interactRadius = s * 0.7
+    interactables.push(mesh)
+  }
+  if (data?.isBuilding) {
+    buildingMeshes.push(mesh)
+  }
+  return mesh
+}
+
+// SWAYING billboard (nature, creatures) — wiggle shader
+function makeSway(asset, x, z, s, data) {
   const tex = texLoader.load(`/assets/${asset}.png`)
   tex.colorSpace = THREE.SRGBColorSpace
   const geo = new THREE.PlaneGeometry(s, s, 4, 4)
@@ -188,42 +230,47 @@ function makeBillboard(asset, x, z, s, data) {
   return mesh
 }
 
-// Buildings
-BUILDINGS.forEach((b) => makeBillboard(b.asset, b.x, b.z, b.s, { name: b.name, desc: b.desc }))
+// Buildings — STATIC, with 3D box behind, enterable
+BUILDINGS.forEach((b) => makeStatic(b.asset, b.x, b.z, b.s, { name: b.name, desc: b.desc, isBuilding: true }))
 
-// Region landmarks — BIG, lots of them
+// Region landmarks — STATIC (mountains, lakes don't sway)
 REGIONS.forEach((r) => {
   const assets = { '크루아상 산맥': 'croissant-mountain', '꿀 호수': 'honey-lake', '우유 바다': 'milk-sea', '밀밭': 'wheat-field', '딸기잼 강': 'jam-river' }
   const a = assets[r.name]
   if (!a) return
+  const sway = r.name === '밀밭' // only wheat sways
   const count = r.name === '크루아상 산맥' ? 12 : r.name === '밀밭' ? 10 : r.name === '우유 바다' ? 5 : 4
   for (let i = 0; i < count; i++) {
     const angle = (i / count) * Math.PI * 2 + Math.random() * 0.8
     const dist = r.r * 0.15 + Math.random() * r.r * 0.7
     const size = r.name === '크루아상 산맥' ? 10 + Math.random() * 8 : 7 + Math.random() * 5
-    makeBillboard(a, r.x + Math.cos(angle) * dist, r.z + Math.sin(angle) * dist, size, { name: r.name, desc: r.desc })
+    const fn = sway ? makeSway : makeStatic
+    fn(a, r.x + Math.cos(angle) * dist, r.z + Math.sin(angle) * dist, size, { name: r.name, desc: r.desc })
   }
 })
 
-// Dense scattered decorations — fill the world
-const allDecos = ['cherry-blossom-tree', 'bread-basket', 'flour-cloud', 'steam-puff', 'baguette-bridge', 'baguette-projectile', 'croissant-projectile', 'melon-pan-projectile', 'pretzel-projectile']
-for (let i = 0; i < 80; i++) {
+// Trees sway, baskets/clouds/bread are static
+for (let i = 0; i < 50; i++) {
   const angle = Math.random() * Math.PI * 2
   const dist = 8 + Math.random() * 120
-  const deco = allDecos[Math.floor(Math.random() * allDecos.length)]
-  const size = deco.includes('tree') ? 5 + Math.random() * 4 : deco.includes('cloud') ? 4 + Math.random() * 3 : 2 + Math.random() * 3
-  makeBillboard(deco, Math.cos(angle) * dist, Math.sin(angle) * dist, size, {})
+  makeSway('cherry-blossom-tree', Math.cos(angle) * dist, Math.sin(angle) * dist, 5 + Math.random() * 4, {})
+}
+for (let i = 0; i < 30; i++) {
+  const angle = Math.random() * Math.PI * 2
+  const dist = 8 + Math.random() * 120
+  const deco = ['bread-basket', 'flour-cloud', 'steam-puff'][Math.floor(Math.random() * 3)]
+  makeStatic(deco, Math.cos(angle) * dist, Math.sin(angle) * dist, 2 + Math.random() * 2, {})
 }
 
-// Extra bread scattered on ground (planet-base as small accents)
+// Ground bread — tiny, static, scattered
 for (let i = 0; i < 40; i++) {
   const angle = Math.random() * Math.PI * 2
   const dist = 15 + Math.random() * 100
   const bread = ['croissant-projectile', 'pretzel-projectile', 'melon-pan-projectile', 'baguette-projectile'][Math.floor(Math.random() * 4)]
-  makeBillboard(bread, Math.cos(angle) * dist, Math.sin(angle) * dist, 1.5 + Math.random() * 1.5, {})
+  makeStatic(bread, Math.cos(angle) * dist, Math.sin(angle) * dist, 1.5 + Math.random() * 1.5, {})
 }
 
-// Wandering creatures — BIGGER, more visible, named
+// Creatures — sway, big, named
 const creatures = []
 const creatureTypes = [
   { asset: 'bread-cat', name: '식빵냥이' },
@@ -234,8 +281,8 @@ for (let i = 0; i < 20; i++) {
   const type = creatureTypes[Math.floor(Math.random() * creatureTypes.length)]
   const angle = Math.random() * Math.PI * 2
   const dist = 10 + Math.random() * 80
-  const size = 4 + Math.random() * 2 // much bigger
-  const m = makeBillboard(type.asset, Math.cos(angle) * dist, Math.sin(angle) * dist, size, { name: type.name, desc: `${type.name}이(가) 빵별을 산책하고 있다.` })
+  const size = 4 + Math.random() * 2
+  const m = makeSway(type.asset, Math.cos(angle) * dist, Math.sin(angle) * dist, size, { name: type.name, desc: `${type.name}이(가) 빵별을 산책하고 있다.` })
   m.userData.wander = { speed: 0.15 + Math.random() * 0.3, phase: Math.random() * Math.PI * 2, ox: m.position.x, oz: m.position.z }
   creatures.push(m)
 }
@@ -280,7 +327,6 @@ const playerPos = playerGroup.position
 let playerAngle = 0
 let lastPuffTime = 0
 
-window.addEventListener('keydown', (e) => { keys[e.code] = true })
 window.addEventListener('keyup', (e) => { keys[e.code] = false })
 
 // Mobile: touch joystick
@@ -293,14 +339,84 @@ canvas.addEventListener('touchmove', (e) => {
 }, { passive: true })
 canvas.addEventListener('touchend', () => { touchStart = null; touchDelta = { x: 0, y: 0 } }, { passive: true })
 
-// Click on buildings
-canvas.addEventListener('click', (e) => {
-  const mouse = new THREE.Vector2((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1)
-  const ray = new THREE.Raycaster()
-  ray.setFromCamera(mouse, camera)
-  const hits = ray.intersectObjects(interactables)
-  if (hits.length > 0 && hits[0].object.userData.name) {
-    showInfo(hits[0].object.userData.name, hits[0].object.userData.desc)
+// ============================================
+// BUILDING ENTRY SYSTEM
+// ============================================
+let insideBuilding = null
+let nearBuilding = null
+const enterPrompt = document.getElementById('enter-prompt')
+
+// Interior colors per building type
+const interiorColors = {
+  '프랑스 빵집': 0xF5E6D0,
+  '일본 빵집': 0xFFF0E0,
+  '이탈리아 빵집': 0xF0E0D0,
+  '한국 빵집': 0xFFF5E8,
+  '풍차': 0xE8DCC0,
+  '오븐 타워': 0xFFDDC0,
+}
+
+function enterBuilding(building) {
+  if (insideBuilding) return
+  insideBuilding = building
+  enterPrompt.classList.add('hidden')
+
+  // Camera zoom into building
+  gsap.to(camera, {
+    fov: 40,
+    duration: 0.8,
+    ease: 'power2.inOut',
+    onUpdate: () => camera.updateProjectionMatrix(),
+  })
+  gsap.to(camera.position, {
+    x: building.position.x,
+    y: 4,
+    z: building.position.z + 3,
+    duration: 0.8,
+    ease: 'power2.inOut',
+  })
+
+  // Change background to interior
+  const color = interiorColors[building.userData.name] || 0xFFF0E0
+  gsap.to(scene.background, {
+    r: ((color >> 16) & 0xff) / 255,
+    g: ((color >> 8) & 0xff) / 255,
+    b: (color & 0xff) / 255,
+    duration: 0.8,
+  })
+  gsap.to(scene.fog, { density: 0.04, duration: 0.8 }) // thick fog = indoors
+
+  // Show interior info
+  showInfo(building.userData.name, building.userData.desc + '\n\nESC 로 나가기')
+
+  // Hide player
+  playerGroup.visible = false
+}
+
+function exitBuilding() {
+  if (!insideBuilding) return
+  insideBuilding = null
+
+  gsap.to(camera, {
+    fov: 55,
+    duration: 0.6,
+    ease: 'power2.inOut',
+    onUpdate: () => camera.updateProjectionMatrix(),
+  })
+  gsap.to(scene.background, { r: 0x87/255, g: 0xCE/255, b: 0xEB/255, duration: 0.6 })
+  gsap.to(scene.fog, { density: 0.006, duration: 0.6 })
+
+  playerGroup.visible = true
+  hideInfo()
+}
+
+window.addEventListener('keydown', (e) => {
+  keys[e.code] = true
+  if (e.code === 'KeyE' && nearBuilding && !insideBuilding) {
+    enterBuilding(nearBuilding)
+  }
+  if (e.code === 'Escape' && insideBuilding) {
+    exitBuilding()
   }
 })
 
@@ -377,8 +493,9 @@ function animate() {
   const dt = Math.min(clock.getDelta(), 0.05)
   const t = clock.getElapsedTime()
 
-  // --- MOVEMENT ---
+  // --- MOVEMENT (disabled when inside building) ---
   let dx = 0, dz = 0
+  if (insideBuilding) { composer.render(); return }
   if (keys['KeyW'] || keys['ArrowUp']) dz -= 1
   if (keys['KeyS'] || keys['ArrowDown']) dz += 1
   if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1
@@ -429,10 +546,15 @@ function animate() {
   camera.position.z += (idealZ - camera.position.z) * 0.05
   camera.lookAt(playerPos.x, 2, playerPos.z)
 
-  // --- BILLBOARDS face camera ---
+  // --- BILLBOARDS ---
+  // Swaying (nature) — face camera + wiggle
   allBillboards.forEach((m) => {
     m.lookAt(camera.position.x, m.position.y, camera.position.z)
     if (m.material.uniforms?.uTime) m.material.uniforms.uTime.value = t
+  })
+  // Static (buildings) — face camera, no wiggle
+  allStatic.forEach((m) => {
+    m.lookAt(camera.position.x, m.position.y, camera.position.z)
   })
 
   // --- CREATURES wander ---
@@ -453,23 +575,27 @@ function animate() {
   }
   fp.needsUpdate = true
 
-  // --- PROXIMITY CHECK: show info when near building ---
-  let nearestBuilding = null
-  let nearestDist = Infinity
-  interactables.forEach((b) => {
-    const ddx = playerPos.x - b.position.x
-    const ddz = playerPos.z - b.position.z
-    const d = Math.sqrt(ddx*ddx + ddz*ddz)
-    if (d < (b.userData.interactRadius || 4) && d < nearestDist) {
-      nearestBuilding = b
-      nearestDist = d
-    }
-  })
+  // --- PROXIMITY CHECK ---
+  if (!insideBuilding) {
+    nearBuilding = null
+    let nearestDist = Infinity
+    buildingMeshes.forEach((b) => {
+      const ddx = playerPos.x - b.position.x
+      const ddz = playerPos.z - b.position.z
+      const d = Math.sqrt(ddx*ddx + ddz*ddz)
+      if (d < (b.userData.interactRadius || 5) && d < nearestDist) {
+        nearBuilding = b
+        nearestDist = d
+      }
+    })
 
-  if (nearestBuilding) {
-    showInfo(nearestBuilding.userData.name, nearestBuilding.userData.desc)
-  } else if (activeInfo) {
-    hideInfo()
+    if (nearBuilding) {
+      enterPrompt.classList.remove('hidden')
+      showInfo(nearBuilding.userData.name, nearBuilding.userData.desc)
+    } else {
+      enterPrompt.classList.add('hidden')
+      if (activeInfo) hideInfo()
+    }
   }
 
   // --- LOCATION NAME ---

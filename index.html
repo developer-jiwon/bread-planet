@@ -10,8 +10,17 @@
 </head>
 <body>
   <div id="loading">
-    <div class="loading-icon">🍞</div>
-    <div class="loading-text">빵별 굽는 중...</div>
+    <div class="loading-oven">
+      <div class="oven-body">
+        <div class="oven-window"></div>
+        <div class="oven-bread">🍞</div>
+      </div>
+      <div class="oven-steam">~</div>
+      <div class="oven-steam s2">~</div>
+      <div class="oven-steam s3">~</div>
+    </div>
+    <div class="loading-text">빵 굽는 중...</div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
   </div>
 
   <canvas id="c"></canvas>
@@ -19,7 +28,8 @@
   <!-- HUD -->
   <div id="hud">
     <div id="location">빵별</div>
-    <div id="hint">WASD / 방향키로 이동 · 건물에 다가가면 정보</div>
+    <div id="hint">WASD / 방향키로 이동</div>
+    <div id="enter-prompt" class="hidden">E 를 눌러 들어가기</div>
   </div>
 
   <!-- Info panel -->
