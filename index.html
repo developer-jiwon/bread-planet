@@ -10,22 +10,26 @@
 </head>
 <body>
   <div id="loading">
-    <div class="flying-breads">
-      <div class="fly-bread" style="--d:0s;--x:10%;--y:20%;--r:25deg;--s:60px">🥖</div>
-      <div class="fly-bread" style="--d:0.3s;--x:75%;--y:15%;--r:-15deg;--s:55px">🥐</div>
-      <div class="fly-bread" style="--d:0.6s;--x:85%;--y:60%;--r:40deg;--s:50px">🍞</div>
-      <div class="fly-bread" style="--d:0.9s;--x:20%;--y:70%;--r:-30deg;--s:45px">🥨</div>
-      <div class="fly-bread" style="--d:1.2s;--x:50%;--y:10%;--r:10deg;--s:65px">🧁</div>
-      <div class="fly-bread" style="--d:1.5s;--x:90%;--y:35%;--r:-45deg;--s:40px">🍩</div>
-      <div class="fly-bread" style="--d:0.2s;--x:30%;--y:85%;--r:35deg;--s:55px">🥯</div>
-      <div class="fly-bread" style="--d:0.8s;--x:65%;--y:80%;--r:-20deg;--s:48px">🍰</div>
-      <div class="fly-bread" style="--d:1.1s;--x:5%;--y:45%;--r:50deg;--s:52px">🧇</div>
-      <div class="fly-bread" style="--d:1.4s;--x:45%;--y:50%;--r:-10deg;--s:70px">🥮</div>
-    </div>
     <div class="loading-center">
+      <div class="oven">
+        <div class="oven-body">
+          <div class="oven-door">
+            <div class="oven-glass">
+              <div class="oven-glow"></div>
+              <img class="oven-bread b1" src="/assets/croissant-projectile.png" alt="">
+              <img class="oven-bread b2" src="/assets/baguette-projectile.png" alt="">
+              <img class="oven-bread b3" src="/assets/pretzel-projectile.png" alt="">
+            </div>
+          </div>
+          <div class="oven-handle"></div>
+        </div>
+        <div class="oven-steam s1">~</div>
+        <div class="oven-steam s2">~</div>
+        <div class="oven-steam s3">~</div>
+      </div>
       <div class="loading-title">빵별</div>
       <div class="loading-sub">빵 굽는 중...</div>
-      <div class="loading-bar"><div class="loading-fill"></div></div>
+      <div class="loading-dots"><span>.</span><span>.</span><span>.</span></div>
     </div>
   </div>
 

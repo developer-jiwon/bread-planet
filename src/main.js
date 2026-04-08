@@ -591,8 +591,8 @@ function dismissLoading() {
 }
 texLoader.manager.onLoad = dismissLoading
 texLoader.manager.onError = (url) => { console.warn('Failed to load:', url) }
-// Fallback: dismiss after 4 seconds no matter what
-setTimeout(dismissLoading, 4000)
+// Fallback: dismiss after 3 seconds no matter what
+setTimeout(dismissLoading, 3000)
 
 // ============================================
 // ANIMATION
