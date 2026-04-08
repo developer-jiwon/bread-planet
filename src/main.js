@@ -4,626 +4,480 @@ import gsap from 'gsap'
 import { EffectComposer, RenderPass, EffectPass, BloomEffect, VignetteEffect } from 'postprocessing'
 
 // ============================================
-// WORLD CONFIG
+// WORLD
 // ============================================
-const MAP_SIZE = 200
+const MAP_R = 80
+
 const REGIONS = [
-  { name: '크루아상 산맥', nameEn: 'Croissant Mountains', desc: '버터가 녹아 흐르는 황금빛 산맥.\n가장 바삭한 봉우리에서 해가 뜬다.', x: 0, z: -40, radius: 30, color: 0xD4A574, height: 8, asset: 'croissant-mountain', count: 5 },
-  { name: '꿀 호수', nameEn: 'Honey Lake', desc: '달콤한 꿀이 천천히 일렁이는 호수.\n호수 바닥에는 황금빛 빛이 흐른다.', x: 35, z: 20, radius: 20, color: 0xF5A623, height: 0.3, asset: 'honey-lake', count: 1 },
-  { name: '우유 바다', nameEn: 'Milk Sea', desc: '부드러운 우유가 잔잔히 출렁이는 바다.\n크림 거품이 파도처럼 밀려온다.', x: -45, z: 30, radius: 25, color: 0xF5F0E8, height: 0.2, asset: 'milk-sea', count: 1 },
-  { name: '밀밭', nameEn: 'Wheat Fields', desc: '황금빛 밀이 바람에 물결치는 들판.\n모든 빵의 시작점.', x: 30, z: -30, radius: 22, color: 0xE8D5A3, height: 1, asset: 'wheat-field', count: 3 },
-  { name: '딸기잼 강', nameEn: 'Jam River', desc: '진한 딸기잼이 흐르는 달콤한 강.\n양 옆으로 딸기가 자란다.', x: -20, z: -10, radius: 15, color: 0xFF6B8A, height: 0.5, asset: 'jam-river', count: 2 },
+  { name: '크루아상 산맥', desc: '버터가 녹아 흐르는 황금빛 산맥.\n가장 바삭한 봉우리에서 해가 뜬다.', x: 0, z: -35, r: 25, color: 0xD4A574, h: 0.3 },
+  { name: '꿀 호수', desc: '달콤한 꿀이 천천히 일렁이는 호수.\n호수 바닥에는 황금빛 빛이 흐른다.', x: 30, z: 18, r: 18, color: 0xF5A623, h: -0.05 },
+  { name: '우유 바다', desc: '부드러운 우유가 잔잔히 출렁이는 바다.\n크림 거품이 파도처럼 밀려온다.', x: -40, z: 25, r: 22, color: 0xF5F0E8, h: -0.05 },
+  { name: '밀밭', desc: '황금빛 밀이 바람에 물결치는 들판.\n모든 빵의 시작점.', x: 25, z: -28, r: 20, color: 0xE8D5A3, h: 0.1 },
+  { name: '딸기잼 강', desc: '진한 딸기잼이 흐르는 달콤한 강.\n양 옆으로 딸기가 자란다.', x: -18, z: -8, r: 12, color: 0xFF6B8A, h: -0.03 },
 ]
 
 const BUILDINGS = [
-  { name: '프랑스 빵집', desc: '바게트와 크루아상의 본고장.\n매일 아침 4시에 불이 켜진다.', asset: 'french-bakery', x: -8, z: 5, scale: 4 },
-  { name: '일본 빵집', desc: '멜론빵과 앙금빵의 성지.\n카레빵은 늘 오후 2시에 나온다.', asset: 'japan-bakery', x: 8, z: -5, scale: 4 },
-  { name: '이탈리아 빵집', desc: '포카치아와 치아바타의 고향.\n올리브 오일 향이 마을을 감싼다.', asset: 'italian-bakery', x: 15, z: 10, scale: 4 },
-  { name: '한국 빵집', desc: '소보로와 크림빵의 천국.\n슈크림은 항상 줄을 서야 한다.', asset: 'korean-bakery', x: -15, z: 12, scale: 4 },
-  { name: '풍차', desc: '밀을 갈아 밀가루를 만드는 풍차.\n날개가 돌 때마다 밀가루가 날린다.', asset: 'windmill', x: 25, z: -15, scale: 5 },
-  { name: '오븐 타워', desc: '빵별에서 가장 높은 건물.\n24시간 빵을 굽는다.', asset: 'oven-tower', x: 0, z: 0, scale: 6 },
+  { name: '프랑스 빵집', desc: '바게트와 크루아상의 본고장.\n매일 아침 4시에 불이 켜진다.', asset: 'french-bakery', x: -6, z: 4, s: 5 },
+  { name: '일본 빵집', desc: '멜론빵과 앙금빵의 성지.\n카레빵은 늘 오후 2시에 나온다.', asset: 'japan-bakery', x: 7, z: -4, s: 5 },
+  { name: '이탈리아 빵집', desc: '포카치아와 치아바타의 고향.\n올리브 오일 향이 마을을 감싼다.', asset: 'italian-bakery', x: 14, z: 9, s: 5 },
+  { name: '한국 빵집', desc: '소보로와 크림빵의 천국.\n슈크림은 항상 줄을 서야 한다.', asset: 'korean-bakery', x: -13, z: 10, s: 5 },
+  { name: '풍차', desc: '밀을 갈아 밀가루를 만드는 풍차.\n날개가 돌 때마다 밀가루가 날린다.', asset: 'windmill', x: 22, z: -14, s: 6 },
+  { name: '오븐 타워', desc: '빵별에서 가장 높은 건물.\n24시간 빵을 굽는다.', asset: 'oven-tower', x: 0, z: 0, s: 7 },
 ]
 
-const BREAD_TYPES = {
-  baguette: { name: '바게트', asset: 'baguette-projectile', speed: 80, arc: 0.3, spin: 2 },
-  croissant: { name: '크루아상', asset: 'croissant-projectile', speed: 60, arc: 0.5, spin: 5 },
-  'melon-pan': { name: '멜론빵', asset: 'melon-pan-projectile', speed: 50, arc: 0.7, spin: 3 },
-  pretzel: { name: '프레첼', asset: 'pretzel-projectile', speed: 70, arc: 0.4, spin: 8 },
-}
-
 // ============================================
-// THREE.JS SETUP
+// THREE.JS
 // ============================================
-const canvas = document.getElementById('planet-canvas')
+const canvas = document.getElementById('c')
 const scene = new THREE.Scene()
-scene.background = new THREE.Color(0xFFF8E7)
-scene.fog = new THREE.FogExp2(0xFFF8E7, 0.008)
+scene.background = new THREE.Color(0x87CEEB) // sky blue
+scene.fog = new THREE.FogExp2(0xE8DCC8, 0.012)
 
-// Orthographic camera (top-down map view)
-const frustum = 30
-const aspect = window.innerWidth / window.innerHeight
-const camera = new THREE.OrthographicCamera(
-  -frustum * aspect, frustum * aspect,
-  frustum, -frustum, 0.1, 500
-)
-camera.position.set(0, 60, 30)
-camera.lookAt(0, 0, 0)
-
-// Perspective camera for bread-follow mode
-const perspCam = new THREE.PerspectiveCamera(50, aspect, 0.1, 500)
-
-let activeCamera = camera
-let isFollowingBread = false
-
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 300)
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.shadowMap.enabled = true
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
-// ============================================
-// POST-PROCESSING
-// ============================================
+// Post-processing
 const composer = new EffectComposer(renderer)
 composer.addPass(new RenderPass(scene, camera))
-const bloomEffect = new BloomEffect({ intensity: 0.4, luminanceThreshold: 0.6, mipmapBlur: true })
-const vignetteEffect = new VignetteEffect({ darkness: 0.3, offset: 0.3 })
-composer.addPass(new EffectPass(camera, bloomEffect, vignetteEffect))
+composer.addPass(new EffectPass(camera,
+  new BloomEffect({ intensity: 0.5, luminanceThreshold: 0.7, mipmapBlur: true }),
+  new VignetteEffect({ darkness: 0.25, offset: 0.3 })
+))
 
 // ============================================
-// LIGHTING — warm bakery light
+// LIGHTING
 // ============================================
-const ambientLight = new THREE.AmbientLight(0xFFE4C4, 0.8)
-scene.add(ambientLight)
+scene.add(new THREE.AmbientLight(0xFFE4C4, 0.9))
+const sun = new THREE.DirectionalLight(0xFFDDAA, 1.3)
+sun.position.set(20, 35, 15)
+sun.castShadow = true
+sun.shadow.mapSize.set(2048, 2048)
+const sc = sun.shadow.camera
+sc.near = 1; sc.far = 100; sc.left = sc.bottom = -50; sc.right = sc.top = 50
+scene.add(sun)
 
-const sunLight = new THREE.DirectionalLight(0xFFDDAA, 1.2)
-sunLight.position.set(20, 40, 15)
-sunLight.castShadow = true
-sunLight.shadow.mapSize.set(2048, 2048)
-sunLight.shadow.camera.near = 1
-sunLight.shadow.camera.far = 100
-sunLight.shadow.camera.left = -50
-sunLight.shadow.camera.right = 50
-sunLight.shadow.camera.top = 50
-sunLight.shadow.camera.bottom = -50
-scene.add(sunLight)
-
-// Warm point light at center (oven tower)
-const ovenLight = new THREE.PointLight(0xFF8844, 1.5, 40)
-ovenLight.position.set(0, 5, 0)
-scene.add(ovenLight)
+// Warm oven glow at center
+const ovenGlow = new THREE.PointLight(0xFF8844, 2, 30)
+ovenGlow.position.set(0, 3, 0)
+scene.add(ovenGlow)
 
 // ============================================
-// GROUND — bread-colored terrain
+// GROUND
 // ============================================
-const groundGeo = new THREE.CircleGeometry(MAP_SIZE / 2, 64)
-const groundMat = new THREE.MeshStandardMaterial({
-  color: 0xF5DEB3,
-  roughness: 0.9,
-  metalness: 0,
-})
+// Main planet disc
+const groundGeo = new THREE.CircleGeometry(MAP_R, 64)
+const groundMat = new THREE.MeshStandardMaterial({ color: 0xF5DEB3, roughness: 0.9 })
 const ground = new THREE.Mesh(groundGeo, groundMat)
 ground.rotation.x = -Math.PI / 2
 ground.receiveShadow = true
 scene.add(ground)
 
-// Region colored areas
+// Region patches
 REGIONS.forEach((r) => {
-  const geo = new THREE.CircleGeometry(r.radius, 32)
-  const mat = new THREE.MeshStandardMaterial({
-    color: r.color,
-    roughness: 0.8,
-    transparent: true,
-    opacity: 0.7,
-  })
-  const mesh = new THREE.Mesh(geo, mat)
+  const g = new THREE.CircleGeometry(r.r, 32)
+  const m = new THREE.MeshStandardMaterial({ color: r.color, roughness: 0.8, transparent: true, opacity: 0.6 })
+  const mesh = new THREE.Mesh(g, m)
   mesh.rotation.x = -Math.PI / 2
-  mesh.position.set(r.x, 0.05, r.z)
+  mesh.position.set(r.x, 0.02 + r.h, r.z)
   mesh.receiveShadow = true
   scene.add(mesh)
 })
 
+// Edge ring (crust)
+const crustGeo = new THREE.RingGeometry(MAP_R - 2, MAP_R, 64)
+const crustMat = new THREE.MeshStandardMaterial({ color: 0xC68B59, roughness: 0.7 })
+const crust = new THREE.Mesh(crustGeo, crustMat)
+crust.rotation.x = -Math.PI / 2
+crust.position.y = 0.01
+scene.add(crust)
+
+// Sky dome gradient
+const skyGeo = new THREE.SphereGeometry(150, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2)
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide,
+  uniforms: { uTime: { value: 0 } },
+  vertexShader: `varying vec3 vPos; void main() { vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `
+    varying vec3 vPos;
+    uniform float uTime;
+    void main() {
+      float h = normalize(vPos).y;
+      vec3 top = vec3(0.45, 0.7, 1.0);
+      vec3 horizon = vec3(1.0, 0.92, 0.8);
+      vec3 col = mix(horizon, top, smoothstep(0.0, 0.5, h));
+      // Subtle warm tint
+      col += vec3(0.05, 0.03, 0.0) * (1.0 - h);
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `,
+})
+scene.add(new THREE.Mesh(skyGeo, skyMat))
+
 // ============================================
-// LOAD ASSETS AS SPRITES
+// PLAYER — bread cat
 // ============================================
-const textureLoader = new THREE.TextureLoader()
-const allObjects = []
-const clickables = []
+const texLoader = new THREE.TextureLoader()
+const playerGroup = new THREE.Group()
 
-// Wiggle shader for sprites
-const wiggleVert = `
-  uniform float uTime;
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    vec3 pos = position;
-    float sway = sin(uTime * 1.5 + pos.y * 2.0) * 0.15 * (1.0 - uv.y);
-    pos.x += sway;
-    pos.y += sin(uTime * 0.8) * 0.05;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-  }
-`
-const spriteFrag = `
-  uniform sampler2D uTexture;
-  varying vec2 vUv;
-  void main() {
-    vec4 tex = texture2D(uTexture, vUv);
-    if (tex.a < 0.05) discard;
-    gl_FragColor = tex;
-  }
-`
+// Body placeholder (will be replaced by sprite)
+const playerTex = texLoader.load('/assets/bread-cat.png')
+playerTex.colorSpace = THREE.SRGBColorSpace
+const playerSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: playerTex, transparent: true, alphaTest: 0.05 }))
+playerSprite.scale.set(3, 3, 1)
+playerSprite.position.y = 1.5
+playerGroup.add(playerSprite)
 
-function createBillboard(assetName, x, y, z, scale, data) {
-  const texture = textureLoader.load(`/assets/${assetName}.png`)
-  texture.colorSpace = THREE.SRGBColorSpace
+// Shadow blob under player
+const shadowGeo = new THREE.CircleGeometry(0.8, 16)
+const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.15 })
+const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat)
+shadowMesh.rotation.x = -Math.PI / 2
+shadowMesh.position.y = 0.02
+playerGroup.add(shadowMesh)
 
-  const geo = new THREE.PlaneGeometry(scale, scale, 6, 6)
+playerGroup.position.set(0, 0, 8)
+scene.add(playerGroup)
+
+// ============================================
+// BUILDINGS & DECORATIONS (billboards)
+// ============================================
+const allBillboards = []
+const interactables = []
+
+function makeBillboard(asset, x, z, s, data) {
+  const tex = texLoader.load(`/assets/${asset}.png`)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const geo = new THREE.PlaneGeometry(s, s, 4, 4)
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uTexture: { value: texture }, uTime: { value: 0 } },
-    vertexShader: wiggleVert,
-    fragmentShader: spriteFrag,
-    transparent: true,
-    depthWrite: false,
-    side: THREE.DoubleSide,
+    uniforms: { uTex: { value: tex }, uTime: { value: 0 } },
+    vertexShader: `
+      uniform float uTime;
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        vec3 p = position;
+        p.x += sin(uTime * 1.2 + p.y * 2.0) * 0.08 * (1.0 - uv.y);
+        p.y += sin(uTime * 0.6) * 0.03;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uTex;
+      varying vec2 vUv;
+      void main() {
+        vec4 t = texture2D(uTex, vUv);
+        if (t.a < 0.05) discard;
+        gl_FragColor = t;
+      }
+    `,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
   })
-
   const mesh = new THREE.Mesh(geo, mat)
-  mesh.position.set(x, y, z)
-  mesh.userData = { ...data, isClickable: !!data.name }
-
+  mesh.position.set(x, s / 2, z)
+  mesh.userData = data || {}
   scene.add(mesh)
-  allObjects.push(mesh)
-  if (data.name) clickables.push(mesh)
+  allBillboards.push(mesh)
+  if (data?.name) {
+    mesh.userData.interactRadius = s * 0.8
+    interactables.push(mesh)
+  }
   return mesh
 }
 
-// Place region assets
+// Buildings
+BUILDINGS.forEach((b) => makeBillboard(b.asset, b.x, b.z, b.s, { name: b.name, desc: b.desc }))
+
+// Region landmarks
 REGIONS.forEach((r) => {
-  for (let i = 0; i < r.count; i++) {
-    const angle = (i / r.count) * Math.PI * 2
-    const dist = r.radius * 0.5 * Math.random()
-    const x = r.x + Math.cos(angle) * dist
-    const z = r.z + Math.sin(angle) * dist
-    createBillboard(r.asset, x, r.height + 2, z, 5 + Math.random() * 3, { name: r.name, desc: r.desc })
-  }
-})
-
-// Place buildings
-BUILDINGS.forEach((b) => {
-  createBillboard(b.asset, b.x, b.scale / 2 + 0.5, b.z, b.scale, { name: b.name, desc: b.desc })
-})
-
-// Scatter decorations
-for (let i = 0; i < 20; i++) {
-  const angle = Math.random() * Math.PI * 2
-  const dist = Math.random() * 50
-  const x = Math.cos(angle) * dist
-  const z = Math.sin(angle) * dist
-  const deco = ['cherry-blossom-tree', 'bread-basket', 'flour-cloud'][Math.floor(Math.random() * 3)]
-  createBillboard(deco, x, 1.5 + Math.random(), z, 2 + Math.random() * 2, {})
-}
-
-// Bread cat & creatures wandering
-for (let i = 0; i < 8; i++) {
-  const creature = ['bread-cat', 'flour-spirit', 'butter-slime'][Math.floor(Math.random() * 3)]
-  const angle = Math.random() * Math.PI * 2
-  const dist = 10 + Math.random() * 35
-  createBillboard(creature, Math.cos(angle) * dist, 1, Math.sin(angle) * dist, 2, {
-    wanderSpeed: 0.3 + Math.random() * 0.5,
-    wanderPhase: Math.random() * Math.PI * 2,
-  })
-}
-
-// ============================================
-// FLOUR PARTICLES
-// ============================================
-const FLOUR_COUNT = 500
-const flourGeo = new THREE.BufferGeometry()
-const flourPos = new Float32Array(FLOUR_COUNT * 3)
-for (let i = 0; i < FLOUR_COUNT; i++) {
-  flourPos[i*3] = (Math.random()-0.5) * MAP_SIZE * 0.6
-  flourPos[i*3+1] = Math.random() * 15
-  flourPos[i*3+2] = (Math.random()-0.5) * MAP_SIZE * 0.6
-}
-flourGeo.setAttribute('position', new THREE.BufferAttribute(flourPos, 3))
-const flourMat = new THREE.PointsMaterial({
-  color: 0xFFF8E7, size: 0.15, transparent: true, opacity: 0.4,
-  sizeAttenuation: true, depthWrite: false,
-})
-scene.add(new THREE.Points(flourGeo, flourMat))
-
-// Steam particles near oven
-const STEAM_COUNT = 100
-const steamGeo = new THREE.BufferGeometry()
-const steamPos = new Float32Array(STEAM_COUNT * 3)
-const steamSpeeds = new Float32Array(STEAM_COUNT)
-for (let i = 0; i < STEAM_COUNT; i++) {
-  steamPos[i*3] = (Math.random()-0.5) * 6
-  steamPos[i*3+1] = Math.random() * 10
-  steamPos[i*3+2] = (Math.random()-0.5) * 6
-  steamSpeeds[i] = 0.01 + Math.random() * 0.03
-}
-steamGeo.setAttribute('position', new THREE.BufferAttribute(steamPos, 3))
-const steamMat = new THREE.PointsMaterial({
-  color: 0xFFEEDD, size: 0.3, transparent: true, opacity: 0.3,
-  sizeAttenuation: true, depthWrite: false, blending: THREE.AdditiveBlending,
-})
-scene.add(new THREE.Points(steamGeo, steamMat))
-
-// ============================================
-// BREAD PROJECTILES
-// ============================================
-let selectedBread = 'baguette'
-const flyingBreads = []
-
-function shootBread(targetX, targetZ) {
-  const breadDef = BREAD_TYPES[selectedBread]
-  const texture = textureLoader.load(`/assets/${breadDef.asset}.png`)
-  texture.colorSpace = THREE.SRGBColorSpace
-
-  const size = 2.5
-  const geo = new THREE.PlaneGeometry(size, size)
-  const mat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, alphaTest: 0.05, side: THREE.DoubleSide })
-  const bread = new THREE.Mesh(geo, mat)
-
-  // Start from camera center, slightly below
-  const startX = camTarget.x
-  const startZ = camTarget.z + 5
-  bread.position.set(startX, 15, startZ)
-
-  const dx = targetX - startX
-  const dz = targetZ - startZ
-  const dist = Math.sqrt(dx*dx + dz*dz)
-  const duration = dist / breadDef.speed * 2
-
-  scene.add(bread)
-
-  // Animate bread flying in arc
-  const tl = gsap.timeline({
-    onComplete: () => {
-      // Impact effect
-      createImpact(targetX, targetZ)
-      scene.remove(bread)
-      flyingBreads.splice(flyingBreads.indexOf(bread), 1)
-      // Return to ortho camera
-      if (isFollowingBread) {
-        isFollowingBread = false
-        gsap.to(camera.position, {
-          x: camTarget.x, z: camTarget.z + 30, y: 60,
-          duration: 0.8, ease: 'power2.inOut',
-          onUpdate: () => camera.lookAt(camTarget.x, 0, camTarget.z),
-        })
-        activeCamera = camera
-        composer.passes[0] = new RenderPass(scene, camera)
-      }
-    }
-  })
-
-  // XZ movement
-  tl.to(bread.position, { x: targetX, z: targetZ, duration, ease: 'none' }, 0)
-  // Y arc
-  tl.to(bread.position, { y: 20 + dist * breadDef.arc * 0.3, duration: duration * 0.4, ease: 'power2.out' }, 0)
-  tl.to(bread.position, { y: 1, duration: duration * 0.6, ease: 'power2.in' }, duration * 0.4)
-  // Spin
-  tl.to(bread.rotation, { z: Math.PI * breadDef.spin, duration, ease: 'none' }, 0)
-
-  flyingBreads.push(bread)
-
-  // Switch to perspective follow cam
-  isFollowingBread = true
-  activeCamera = perspCam
-  composer.passes[0] = new RenderPass(scene, perspCam)
-}
-
-function createImpact(x, z) {
-  // Flour explosion particles
-  const count = 30
+  const assets = { '크루아상 산맥': 'croissant-mountain', '꿀 호수': 'honey-lake', '우유 바다': 'milk-sea', '밀밭': 'wheat-field', '딸기잼 강': 'jam-river' }
+  const a = assets[r.name]
+  if (!a) return
+  const count = r.name === '크루아상 산맥' ? 4 : r.name === '밀밭' ? 3 : 1
   for (let i = 0; i < count; i++) {
-    const geo = new THREE.SphereGeometry(0.1 + Math.random() * 0.15)
-    const mat = new THREE.MeshBasicMaterial({ color: 0xFFF8E7, transparent: true, opacity: 0.8 })
-    const p = new THREE.Mesh(geo, mat)
-    p.position.set(x, 1, z)
-    scene.add(p)
-
-    const angle = Math.random() * Math.PI * 2
-    const speed = 2 + Math.random() * 5
-    const vx = Math.cos(angle) * speed
-    const vz = Math.sin(angle) * speed
-
-    gsap.to(p.position, { x: x + vx, y: 1 + Math.random() * 4, z: z + vz, duration: 0.6, ease: 'power2.out' })
-    gsap.to(p.material, { opacity: 0, duration: 0.8, delay: 0.3, onComplete: () => scene.remove(p) })
+    const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5
+    const dist = r.r * 0.4 * (0.5 + Math.random() * 0.5)
+    makeBillboard(a, r.x + Math.cos(angle) * dist, r.z + Math.sin(angle) * dist, 4 + Math.random() * 3, { name: r.name, desc: r.desc })
   }
+})
 
-  // Screen shake
-  gsap.to(camera.position, { x: camera.position.x + (Math.random()-0.5)*0.5, duration: 0.05, yoyo: true, repeat: 5 })
+// Decorations
+const decos = ['cherry-blossom-tree', 'bread-basket', 'flour-cloud', 'steam-puff']
+for (let i = 0; i < 25; i++) {
+  const angle = Math.random() * Math.PI * 2
+  const dist = 5 + Math.random() * 55
+  makeBillboard(decos[Math.floor(Math.random() * decos.length)], Math.cos(angle) * dist, Math.sin(angle) * dist, 2 + Math.random() * 2, {})
+}
+
+// Wandering creatures
+const creatures = []
+for (let i = 0; i < 10; i++) {
+  const type = ['bread-cat', 'flour-spirit', 'butter-slime'][Math.floor(Math.random() * 3)]
+  const angle = Math.random() * Math.PI * 2
+  const dist = 8 + Math.random() * 40
+  const m = makeBillboard(type, Math.cos(angle) * dist, Math.sin(angle) * dist, 2.5, {})
+  m.userData.wander = { speed: 0.2 + Math.random() * 0.4, phase: Math.random() * Math.PI * 2, ox: m.position.x, oz: m.position.z }
+  creatures.push(m)
 }
 
 // ============================================
-// CAMERA CONTROLS (pan/zoom)
+// PARTICLES
 // ============================================
-const camTarget = { x: 0, z: 0 }
-let isDragging = false
-let dragStart = { x: 0, y: 0 }
-let zoom = 30
+// Flour dust
+const FLOUR = 400
+const flourGeo = new THREE.BufferGeometry()
+const fPos = new Float32Array(FLOUR * 3)
+for (let i = 0; i < FLOUR; i++) {
+  fPos[i*3] = (Math.random()-0.5) * MAP_R * 1.5
+  fPos[i*3+1] = Math.random() * 12
+  fPos[i*3+2] = (Math.random()-0.5) * MAP_R * 1.5
+}
+flourGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3))
+scene.add(new THREE.Points(flourGeo, new THREE.PointsMaterial({
+  color: 0xFFF8E7, size: 0.12, transparent: true, opacity: 0.35, sizeAttenuation: true, depthWrite: false,
+})))
 
-canvas.addEventListener('mousedown', (e) => {
-  if (e.button === 2 || e.button === 1) { // Right/middle click = drag
-    isDragging = true
-    dragStart = { x: e.clientX, y: e.clientY }
-    return
-  }
-})
+// Footstep puffs
+const footPuffs = []
+function spawnFootPuff(x, z) {
+  const g = new THREE.SphereGeometry(0.15, 6, 6)
+  const m = new THREE.MeshBasicMaterial({ color: 0xFFF8E7, transparent: true, opacity: 0.6 })
+  const p = new THREE.Mesh(g, m)
+  p.position.set(x, 0.1, z)
+  scene.add(p)
+  gsap.to(p.position, { y: 0.8, duration: 0.6, ease: 'power2.out' })
+  gsap.to(p.scale, { x: 2, y: 2, z: 2, duration: 0.6 })
+  gsap.to(m, { opacity: 0, duration: 0.6, onComplete: () => { scene.remove(p); footPuffs.splice(footPuffs.indexOf(p), 1) } })
+  footPuffs.push(p)
+}
 
-canvas.addEventListener('mousemove', (e) => {
-  // Update crosshair
-  crosshair.style.left = e.clientX + 'px'
-  crosshair.style.top = e.clientY + 'px'
+// ============================================
+// CONTROLS
+// ============================================
+const keys = {}
+const playerSpeed = 8
+const playerPos = playerGroup.position
+let playerAngle = 0
+let lastPuffTime = 0
 
-  if (isDragging) {
-    const dx = (e.clientX - dragStart.x) * 0.1 * (zoom / 30)
-    const dy = (e.clientY - dragStart.y) * 0.1 * (zoom / 30)
-    camTarget.x -= dx
-    camTarget.z -= dy
-    dragStart = { x: e.clientX, y: e.clientY }
-  }
-})
+window.addEventListener('keydown', (e) => { keys[e.code] = true })
+window.addEventListener('keyup', (e) => { keys[e.code] = false })
 
-canvas.addEventListener('mouseup', () => { isDragging = false })
+// Mobile: touch joystick
+let touchStart = null, touchDelta = { x: 0, y: 0 }
+canvas.addEventListener('touchstart', (e) => { touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY } }, { passive: true })
+canvas.addEventListener('touchmove', (e) => {
+  if (!touchStart) return
+  touchDelta.x = (e.touches[0].clientX - touchStart.x) / 50
+  touchDelta.y = (e.touches[0].clientY - touchStart.y) / 50
+}, { passive: true })
+canvas.addEventListener('touchend', () => { touchStart = null; touchDelta = { x: 0, y: 0 } }, { passive: true })
 
-// Left click = shoot bread
+// Click on buildings
 canvas.addEventListener('click', (e) => {
-  if (isFollowingBread) return
-
-  // Raycast to find world position
-  const mouse = new THREE.Vector2(
-    (e.clientX / window.innerWidth) * 2 - 1,
-    -(e.clientY / window.innerHeight) * 2 + 1
-  )
-
-  const raycaster = new THREE.Raycaster()
-  raycaster.setFromCamera(mouse, camera)
-
-  // Check clickable objects first
-  const hits = raycaster.intersectObjects(clickables)
-  if (hits.length > 0) {
-    const data = hits[0].object.userData
-    if (data.name) {
-      showInfo(data.name, data.desc)
-      return
-    }
+  const mouse = new THREE.Vector2((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1)
+  const ray = new THREE.Raycaster()
+  ray.setFromCamera(mouse, camera)
+  const hits = ray.intersectObjects(interactables)
+  if (hits.length > 0 && hits[0].object.userData.name) {
+    showInfo(hits[0].object.userData.name, hits[0].object.userData.desc)
   }
-
-  // Otherwise, find ground position and shoot
-  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
-  const target = new THREE.Vector3()
-  raycaster.ray.intersectPlane(groundPlane, target)
-
-  if (target) {
-    shootBread(target.x, target.z)
-  }
-})
-
-// Scroll = zoom
-canvas.addEventListener('wheel', (e) => {
-  e.preventDefault()
-  zoom += e.deltaY * 0.02
-  zoom = Math.max(10, Math.min(80, zoom))
-}, { passive: false })
-
-// Prevent context menu
-canvas.addEventListener('contextmenu', (e) => e.preventDefault())
-
-// ============================================
-// BREAD SELECTOR
-// ============================================
-document.querySelectorAll('.bread-option').forEach((el) => {
-  el.addEventListener('click', (e) => {
-    e.stopPropagation()
-    document.querySelectorAll('.bread-option').forEach((b) => b.classList.remove('active'))
-    el.classList.add('active')
-    selectedBread = el.dataset.bread
-  })
 })
 
 // ============================================
 // INFO PANEL
 // ============================================
-const infoPanel = document.getElementById('info-panel')
+const infoEl = document.getElementById('info')
 const infoTitle = document.getElementById('info-title')
 const infoDesc = document.getElementById('info-desc')
-const crosshair = document.getElementById('crosshair')
+const locationEl = document.getElementById('location')
+let activeInfo = null
 
 function showInfo(title, desc) {
+  if (activeInfo === title) return
+  activeInfo = title
   infoTitle.textContent = title
   infoDesc.textContent = desc
-  infoPanel.classList.remove('hidden')
+  infoEl.classList.remove('hidden')
 }
 
-document.getElementById('info-close').addEventListener('click', () => {
-  infoPanel.classList.add('hidden')
-})
+function hideInfo() {
+  infoEl.classList.add('hidden')
+  activeInfo = null
+}
+
+document.getElementById('info-close').addEventListener('click', hideInfo)
 
 // ============================================
-// AUDIO — Lofi Bakery Ambience
+// AUDIO — Lofi Bakery
 // ============================================
-let audioStarted = false
-const audioState = {}
-
+let audioOn = false
 function initAudio() {
-  if (audioStarted) return
-  audioStarted = true
-
+  if (audioOn) return; audioOn = true
   const ctx = new (window.AudioContext || window.webkitAudioContext)()
   if (ctx.state === 'suspended') ctx.resume()
-  const master = ctx.createGain()
-  master.gain.value = 0.6
-  master.connect(ctx.destination)
+  const master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination)
 
-  // Warm pad (major chord: C3-E3-G3)
-  const notes = [130.81, 164.81, 196.00, 261.63]
-  notes.forEach((freq, i) => {
-    const osc = ctx.createOscillator()
-    osc.type = i < 2 ? 'sine' : 'triangle'
-    osc.frequency.value = freq
-    const gain = ctx.createGain()
-    gain.gain.value = 0.04
-    const filter = ctx.createBiquadFilter()
-    filter.type = 'lowpass'
-    filter.frequency.value = 300
-    osc.connect(filter).connect(gain).connect(master)
-    osc.start()
+  // Warm major pad C-E-G-C5
+  ;[130.81, 164.81, 196.00, 261.63].forEach((f, i) => {
+    const o = ctx.createOscillator()
+    o.type = i < 2 ? 'sine' : 'triangle'
+    o.frequency.value = f
+    const g = ctx.createGain(); g.gain.value = 0.035
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 250
+    o.connect(lp).connect(g).connect(master); o.start()
   })
 
-  // Gentle rhythm (soft kick-like pulse)
-  const bufSize = ctx.sampleRate * 2
-  const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate)
-  const d = noiseBuf.getChannelData(0)
-  for (let i = 0; i < bufSize; i++) d[i] = Math.random() * 2 - 1
-  const noise = ctx.createBufferSource()
-  noise.buffer = noiseBuf
-  noise.loop = true
-  const noiseBP = ctx.createBiquadFilter()
-  noiseBP.type = 'bandpass'
-  noiseBP.frequency.value = 200
-  noiseBP.Q.value = 1
-  const noiseGain = ctx.createGain()
-  noiseGain.gain.value = 0.02
-  noise.connect(noiseBP).connect(noiseGain).connect(master)
-  noise.start()
-
-  audioState.ctx = ctx
+  // Birds/nature noise
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1
+  const n = ctx.createBufferSource(); n.buffer = buf; n.loop = true
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3000; bp.Q.value = 5
+  const ng = ctx.createGain(); ng.gain.value = 0.008
+  n.connect(bp).connect(ng).connect(master); n.start()
 }
-
-;['click', 'touchstart', 'wheel', 'keydown', 'mousedown'].forEach((evt) => {
-  document.addEventListener(evt, initAudio, { once: true })
-  window.addEventListener(evt, initAudio, { once: true })
-})
-
-// ============================================
-// RENDER LOOP
-// ============================================
-const clock = new THREE.Clock()
-const locationEl = document.getElementById('location-name')
-const coordsEl = document.getElementById('coordinates')
-
-function animate() {
-  requestAnimationFrame(animate)
-  const t = clock.getElapsedTime()
-
-  // Update ortho camera
-  if (!isFollowingBread) {
-    const f = zoom
-    camera.left = -f * aspect
-    camera.right = f * aspect
-    camera.top = f
-    camera.bottom = -f
-    camera.updateProjectionMatrix()
-
-    camera.position.x += (camTarget.x - camera.position.x) * 0.08
-    camera.position.z += (camTarget.z + 30 - camera.position.z) * 0.08
-    camera.position.y += (60 - camera.position.y) * 0.08
-    camera.lookAt(camTarget.x, 0, camTarget.z)
-  }
-
-  // Follow bread in perspective
-  if (isFollowingBread && flyingBreads.length > 0) {
-    const bread = flyingBreads[flyingBreads.length - 1]
-    const behindX = bread.position.x
-    const behindZ = bread.position.z + 8
-    perspCam.position.set(behindX, bread.position.y + 5, behindZ)
-    perspCam.lookAt(bread.position.x, bread.position.y, bread.position.z - 5)
-  }
-
-  // Billboards face camera
-  allObjects.forEach((obj) => {
-    if (obj.material?.uniforms?.uTime) {
-      obj.material.uniforms.uTime.value = t
-    }
-    // Billboard: rotate to face camera
-    obj.lookAt(activeCamera.position.x, obj.position.y, activeCamera.position.z)
-
-    // Wander creatures
-    const u = obj.userData
-    if (u.wanderSpeed) {
-      obj.position.x += Math.sin(t * u.wanderSpeed + u.wanderPhase) * 0.02
-      obj.position.z += Math.cos(t * u.wanderSpeed * 0.7 + u.wanderPhase) * 0.015
-    }
-  })
-
-  // Flour particles drift
-  const fp = flourGeo.attributes.position
-  for (let i = 0; i < FLOUR_COUNT; i++) {
-    fp.array[i*3] += Math.sin(t * 0.3 + i * 0.5) * 0.003
-    fp.array[i*3+1] += 0.002
-    fp.array[i*3+2] += Math.cos(t * 0.2 + i * 0.3) * 0.002
-    if (fp.array[i*3+1] > 15) fp.array[i*3+1] = 0.5
-  }
-  fp.needsUpdate = true
-
-  // Steam rises
-  const sp = steamGeo.attributes.position
-  for (let i = 0; i < STEAM_COUNT; i++) {
-    sp.array[i*3+1] += steamSpeeds[i]
-    sp.array[i*3] += Math.sin(t * 0.5 + i) * 0.005
-    if (sp.array[i*3+1] > 12) {
-      sp.array[i*3+1] = 0.5
-      sp.array[i*3] = (Math.random()-0.5) * 6
-      sp.array[i*3+2] = (Math.random()-0.5) * 6
-    }
-  }
-  sp.needsUpdate = true
-
-  // Oven light flicker
-  ovenLight.intensity = 1.5 + Math.sin(t * 3) * 0.2
-
-  // Update location name based on camera position
-  let closest = null
-  let closestDist = Infinity
-  REGIONS.forEach((r) => {
-    const dx = camTarget.x - r.x
-    const dz = camTarget.z - r.z
-    const d = Math.sqrt(dx*dx + dz*dz)
-    if (d < r.radius && d < closestDist) {
-      closest = r
-      closestDist = d
-    }
-  })
-  locationEl.textContent = closest ? closest.name : '빵별'
-  coordsEl.textContent = `${camTarget.x.toFixed(0)}, ${camTarget.z.toFixed(0)}`
-
-  // AudioContext resume check
-  if (audioState.ctx?.state === 'suspended') audioState.ctx.resume()
-
-  // Render
-  composer.passes[0] = new RenderPass(scene, activeCamera)
-  composer.render()
-}
+;['click','touchstart','keydown'].forEach((e) => { document.addEventListener(e, initAudio, { once: true }) })
 
 // ============================================
 // LOADING
 // ============================================
 const loadingEl = document.getElementById('loading')
-textureLoader.manager.onLoad = () => {
-  if (loadingEl) {
-    gsap.to(loadingEl, { opacity: 0, duration: 0.8, delay: 0.5, onComplete: () => loadingEl.remove() })
+texLoader.manager.onLoad = () => {
+  gsap.to(loadingEl, { opacity: 0, duration: 0.8, delay: 0.5, onComplete: () => loadingEl?.remove() })
+}
+
+// ============================================
+// ANIMATION
+// ============================================
+const clock = new THREE.Clock()
+
+function animate() {
+  requestAnimationFrame(animate)
+  const dt = Math.min(clock.getDelta(), 0.05)
+  const t = clock.getElapsedTime()
+
+  // --- MOVEMENT ---
+  let dx = 0, dz = 0
+  if (keys['KeyW'] || keys['ArrowUp']) dz -= 1
+  if (keys['KeyS'] || keys['ArrowDown']) dz += 1
+  if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1
+  if (keys['KeyD'] || keys['ArrowRight']) dx += 1
+
+  // Mobile touch
+  dx += touchDelta.x
+  dz += touchDelta.y
+
+  const moving = dx !== 0 || dz !== 0
+  if (moving) {
+    const len = Math.sqrt(dx*dx + dz*dz)
+    dx /= len; dz /= len
+    playerPos.x += dx * playerSpeed * dt
+    playerPos.z += dz * playerSpeed * dt
+    playerAngle = Math.atan2(dx, dz)
+
+    // Clamp to planet
+    const dist = Math.sqrt(playerPos.x**2 + playerPos.z**2)
+    if (dist > MAP_R - 3) {
+      playerPos.x *= (MAP_R - 3) / dist
+      playerPos.z *= (MAP_R - 3) / dist
+    }
+
+    // Footstep puffs
+    if (t - lastPuffTime > 0.25) {
+      spawnFootPuff(playerPos.x, playerPos.z)
+      lastPuffTime = t
+    }
   }
+
+  // Player bounce when walking
+  playerSprite.position.y = 1.5 + (moving ? Math.abs(Math.sin(t * 8)) * 0.3 : Math.sin(t * 1.5) * 0.05)
+  // Flip sprite based on direction
+  playerSprite.material.map.center.set(0.5, 0.5)
+  if (dx < -0.1) playerSprite.scale.x = -3
+  else if (dx > 0.1) playerSprite.scale.x = 3
+
+  // --- CAMERA: 3rd person follow ---
+  const camDist = 12
+  const camHeight = 9
+  const idealX = playerPos.x - Math.sin(playerAngle) * camDist * 0.3
+  const idealZ = playerPos.z + camDist
+  const idealY = camHeight
+
+  camera.position.x += (idealX - camera.position.x) * 0.05
+  camera.position.y += (idealY - camera.position.y) * 0.05
+  camera.position.z += (idealZ - camera.position.z) * 0.05
+  camera.lookAt(playerPos.x, 2, playerPos.z)
+
+  // --- BILLBOARDS face camera ---
+  allBillboards.forEach((m) => {
+    m.lookAt(camera.position.x, m.position.y, camera.position.z)
+    if (m.material.uniforms?.uTime) m.material.uniforms.uTime.value = t
+  })
+
+  // --- CREATURES wander ---
+  creatures.forEach((c) => {
+    const w = c.userData.wander
+    if (!w) return
+    c.position.x = w.ox + Math.sin(t * w.speed + w.phase) * 4
+    c.position.z = w.oz + Math.cos(t * w.speed * 0.7 + w.phase) * 3
+  })
+
+  // --- FLOUR drift ---
+  const fp = flourGeo.attributes.position
+  for (let i = 0; i < FLOUR; i++) {
+    fp.array[i*3] += Math.sin(t * 0.2 + i * 0.4) * 0.002
+    fp.array[i*3+1] += 0.001
+    fp.array[i*3+2] += Math.cos(t * 0.15 + i * 0.3) * 0.001
+    if (fp.array[i*3+1] > 12) fp.array[i*3+1] = 0.3
+  }
+  fp.needsUpdate = true
+
+  // --- PROXIMITY CHECK: show info when near building ---
+  let nearestBuilding = null
+  let nearestDist = Infinity
+  interactables.forEach((b) => {
+    const ddx = playerPos.x - b.position.x
+    const ddz = playerPos.z - b.position.z
+    const d = Math.sqrt(ddx*ddx + ddz*ddz)
+    if (d < (b.userData.interactRadius || 4) && d < nearestDist) {
+      nearestBuilding = b
+      nearestDist = d
+    }
+  })
+
+  if (nearestBuilding) {
+    showInfo(nearestBuilding.userData.name, nearestBuilding.userData.desc)
+  } else if (activeInfo) {
+    hideInfo()
+  }
+
+  // --- LOCATION NAME ---
+  let region = null
+  REGIONS.forEach((r) => {
+    const d = Math.sqrt((playerPos.x - r.x) ** 2 + (playerPos.z - r.z) ** 2)
+    if (d < r.r) region = r
+  })
+  locationEl.textContent = region ? region.name : '빵별'
+
+  // --- OVEN GLOW flicker ---
+  ovenGlow.intensity = 2 + Math.sin(t * 3) * 0.3
+
+  // --- RENDER ---
+  composer.render()
 }
 
 // ============================================
 // RESIZE
 // ============================================
 window.addEventListener('resize', () => {
-  const a = window.innerWidth / window.innerHeight
-  camera.left = -zoom * a; camera.right = zoom * a
-  camera.top = zoom; camera.bottom = -zoom
+  camera.aspect = window.innerWidth / window.innerHeight
   camera.updateProjectionMatrix()
-  perspCam.aspect = a
-  perspCam.updateProjectionMatrix()
   renderer.setSize(window.innerWidth, window.innerHeight)
   composer.setSize(window.innerWidth, window.innerHeight)
 })
 
-// ============================================
-// START
-// ============================================
 animate()
