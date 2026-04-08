@@ -6,23 +6,23 @@ import { EffectComposer, RenderPass, EffectPass, BloomEffect, VignetteEffect } f
 // ============================================
 // WORLD
 // ============================================
-const MAP_R = 80
+const MAP_R = 300 // 4x bigger — no visible edge
 
 const REGIONS = [
-  { name: '크루아상 산맥', desc: '버터가 녹아 흐르는 황금빛 산맥.\n가장 바삭한 봉우리에서 해가 뜬다.', x: 0, z: -35, r: 25, color: 0xD4A574, h: 0.3 },
-  { name: '꿀 호수', desc: '달콤한 꿀이 천천히 일렁이는 호수.\n호수 바닥에는 황금빛 빛이 흐른다.', x: 30, z: 18, r: 18, color: 0xF5A623, h: -0.05 },
-  { name: '우유 바다', desc: '부드러운 우유가 잔잔히 출렁이는 바다.\n크림 거품이 파도처럼 밀려온다.', x: -40, z: 25, r: 22, color: 0xF5F0E8, h: -0.05 },
-  { name: '밀밭', desc: '황금빛 밀이 바람에 물결치는 들판.\n모든 빵의 시작점.', x: 25, z: -28, r: 20, color: 0xE8D5A3, h: 0.1 },
-  { name: '딸기잼 강', desc: '진한 딸기잼이 흐르는 달콤한 강.\n양 옆으로 딸기가 자란다.', x: -18, z: -8, r: 12, color: 0xFF6B8A, h: -0.03 },
+  { name: '크루아상 산맥', desc: '버터가 녹아 흐르는 황금빛 산맥.\n가장 바삭한 봉우리에서 해가 뜬다.', x: 0, z: -60, r: 50, color: 0xD4A574, h: 0.3 },
+  { name: '꿀 호수', desc: '달콤한 꿀이 천천히 일렁이는 호수.\n호수 바닥에는 황금빛 빛이 흐른다.', x: 60, z: 40, r: 35, color: 0xF5A623, h: -0.05 },
+  { name: '우유 바다', desc: '부드러운 우유가 잔잔히 출렁이는 바다.\n크림 거품이 파도처럼 밀려온다.', x: -70, z: 50, r: 40, color: 0xF5F0E8, h: -0.05 },
+  { name: '밀밭', desc: '황금빛 밀이 바람에 물결치는 들판.\n모든 빵의 시작점.', x: 50, z: -50, r: 38, color: 0xE8D5A3, h: 0.1 },
+  { name: '딸기잼 강', desc: '진한 딸기잼이 흐르는 달콤한 강.\n양 옆으로 딸기가 자란다.', x: -35, z: -15, r: 22, color: 0xFF6B8A, h: -0.03 },
 ]
 
 const BUILDINGS = [
-  { name: '프랑스 빵집', desc: '바게트와 크루아상의 본고장.\n매일 아침 4시에 불이 켜진다.', asset: 'french-bakery', x: -6, z: 4, s: 5 },
-  { name: '일본 빵집', desc: '멜론빵과 앙금빵의 성지.\n카레빵은 늘 오후 2시에 나온다.', asset: 'japan-bakery', x: 7, z: -4, s: 5 },
-  { name: '이탈리아 빵집', desc: '포카치아와 치아바타의 고향.\n올리브 오일 향이 마을을 감싼다.', asset: 'italian-bakery', x: 14, z: 9, s: 5 },
-  { name: '한국 빵집', desc: '소보로와 크림빵의 천국.\n슈크림은 항상 줄을 서야 한다.', asset: 'korean-bakery', x: -13, z: 10, s: 5 },
-  { name: '풍차', desc: '밀을 갈아 밀가루를 만드는 풍차.\n날개가 돌 때마다 밀가루가 날린다.', asset: 'windmill', x: 22, z: -14, s: 6 },
-  { name: '오븐 타워', desc: '빵별에서 가장 높은 건물.\n24시간 빵을 굽는다.', asset: 'oven-tower', x: 0, z: 0, s: 7 },
+  { name: '프랑스 빵집', desc: '바게트와 크루아상의 본고장.\n매일 아침 4시에 불이 켜진다.', asset: 'french-bakery', x: -10, z: 8, s: 12 },
+  { name: '일본 빵집', desc: '멜론빵과 앙금빵의 성지.\n카레빵은 늘 오후 2시에 나온다.', asset: 'japan-bakery', x: 14, z: -8, s: 12 },
+  { name: '이탈리아 빵집', desc: '포카치아와 치아바타의 고향.\n올리브 오일 향이 마을을 감싼다.', asset: 'italian-bakery', x: 28, z: 18, s: 12 },
+  { name: '한국 빵집', desc: '소보로와 크림빵의 천국.\n슈크림은 항상 줄을 서야 한다.', asset: 'korean-bakery', x: -25, z: 20, s: 12 },
+  { name: '풍차', desc: '밀을 갈아 밀가루를 만드는 풍차.\n날개가 돌 때마다 밀가루가 날린다.', asset: 'windmill', x: 40, z: -25, s: 15 },
+  { name: '오븐 타워', desc: '빵별에서 가장 높은 건물.\n24시간 빵을 굽는다.', asset: 'oven-tower', x: 0, z: 0, s: 18 },
 ]
 
 // ============================================
@@ -31,9 +31,9 @@ const BUILDINGS = [
 const canvas = document.getElementById('c')
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0x87CEEB) // sky blue
-scene.fog = new THREE.FogExp2(0xE8DCC8, 0.012)
+scene.fog = new THREE.FogExp2(0xE8DCC8, 0.006) // gentle fog hides edges
 
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 300)
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 600)
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -96,7 +96,7 @@ crust.position.y = 0.01
 scene.add(crust)
 
 // Sky dome gradient
-const skyGeo = new THREE.SphereGeometry(150, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2)
+const skyGeo = new THREE.SphereGeometry(400, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2)
 const skyMat = new THREE.ShaderMaterial({
   side: THREE.BackSide,
   uniforms: { uTime: { value: 0 } },
@@ -191,35 +191,52 @@ function makeBillboard(asset, x, z, s, data) {
 // Buildings
 BUILDINGS.forEach((b) => makeBillboard(b.asset, b.x, b.z, b.s, { name: b.name, desc: b.desc }))
 
-// Region landmarks
+// Region landmarks — BIG, lots of them
 REGIONS.forEach((r) => {
   const assets = { '크루아상 산맥': 'croissant-mountain', '꿀 호수': 'honey-lake', '우유 바다': 'milk-sea', '밀밭': 'wheat-field', '딸기잼 강': 'jam-river' }
   const a = assets[r.name]
   if (!a) return
-  const count = r.name === '크루아상 산맥' ? 4 : r.name === '밀밭' ? 3 : 1
+  const count = r.name === '크루아상 산맥' ? 12 : r.name === '밀밭' ? 10 : r.name === '우유 바다' ? 5 : 4
   for (let i = 0; i < count; i++) {
-    const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5
-    const dist = r.r * 0.4 * (0.5 + Math.random() * 0.5)
-    makeBillboard(a, r.x + Math.cos(angle) * dist, r.z + Math.sin(angle) * dist, 4 + Math.random() * 3, { name: r.name, desc: r.desc })
+    const angle = (i / count) * Math.PI * 2 + Math.random() * 0.8
+    const dist = r.r * 0.15 + Math.random() * r.r * 0.7
+    const size = r.name === '크루아상 산맥' ? 10 + Math.random() * 8 : 7 + Math.random() * 5
+    makeBillboard(a, r.x + Math.cos(angle) * dist, r.z + Math.sin(angle) * dist, size, { name: r.name, desc: r.desc })
   }
 })
 
-// Decorations
-const decos = ['cherry-blossom-tree', 'bread-basket', 'flour-cloud', 'steam-puff']
-for (let i = 0; i < 25; i++) {
+// Dense scattered decorations — fill the world
+const allDecos = ['cherry-blossom-tree', 'bread-basket', 'flour-cloud', 'steam-puff', 'baguette-bridge', 'baguette-projectile', 'croissant-projectile', 'melon-pan-projectile', 'pretzel-projectile']
+for (let i = 0; i < 80; i++) {
   const angle = Math.random() * Math.PI * 2
-  const dist = 5 + Math.random() * 55
-  makeBillboard(decos[Math.floor(Math.random() * decos.length)], Math.cos(angle) * dist, Math.sin(angle) * dist, 2 + Math.random() * 2, {})
+  const dist = 8 + Math.random() * 120
+  const deco = allDecos[Math.floor(Math.random() * allDecos.length)]
+  const size = deco.includes('tree') ? 5 + Math.random() * 4 : deco.includes('cloud') ? 4 + Math.random() * 3 : 2 + Math.random() * 3
+  makeBillboard(deco, Math.cos(angle) * dist, Math.sin(angle) * dist, size, {})
 }
 
-// Wandering creatures
-const creatures = []
-for (let i = 0; i < 10; i++) {
-  const type = ['bread-cat', 'flour-spirit', 'butter-slime'][Math.floor(Math.random() * 3)]
+// Extra bread scattered on ground (planet-base as small accents)
+for (let i = 0; i < 40; i++) {
   const angle = Math.random() * Math.PI * 2
-  const dist = 8 + Math.random() * 40
-  const m = makeBillboard(type, Math.cos(angle) * dist, Math.sin(angle) * dist, 2.5, {})
-  m.userData.wander = { speed: 0.2 + Math.random() * 0.4, phase: Math.random() * Math.PI * 2, ox: m.position.x, oz: m.position.z }
+  const dist = 15 + Math.random() * 100
+  const bread = ['croissant-projectile', 'pretzel-projectile', 'melon-pan-projectile', 'baguette-projectile'][Math.floor(Math.random() * 4)]
+  makeBillboard(bread, Math.cos(angle) * dist, Math.sin(angle) * dist, 1.5 + Math.random() * 1.5, {})
+}
+
+// Wandering creatures — BIGGER, more visible, named
+const creatures = []
+const creatureTypes = [
+  { asset: 'bread-cat', name: '식빵냥이' },
+  { asset: 'flour-spirit', name: '밀가루요정' },
+  { asset: 'butter-slime', name: '버터슬라임' },
+]
+for (let i = 0; i < 20; i++) {
+  const type = creatureTypes[Math.floor(Math.random() * creatureTypes.length)]
+  const angle = Math.random() * Math.PI * 2
+  const dist = 10 + Math.random() * 80
+  const size = 4 + Math.random() * 2 // much bigger
+  const m = makeBillboard(type.asset, Math.cos(angle) * dist, Math.sin(angle) * dist, size, { name: type.name, desc: `${type.name}이(가) 빵별을 산책하고 있다.` })
+  m.userData.wander = { speed: 0.15 + Math.random() * 0.3, phase: Math.random() * Math.PI * 2, ox: m.position.x, oz: m.position.z }
   creatures.push(m)
 }
 
@@ -227,13 +244,13 @@ for (let i = 0; i < 10; i++) {
 // PARTICLES
 // ============================================
 // Flour dust
-const FLOUR = 400
+const FLOUR = 600
 const flourGeo = new THREE.BufferGeometry()
 const fPos = new Float32Array(FLOUR * 3)
 for (let i = 0; i < FLOUR; i++) {
-  fPos[i*3] = (Math.random()-0.5) * MAP_R * 1.5
-  fPos[i*3+1] = Math.random() * 12
-  fPos[i*3+2] = (Math.random()-0.5) * MAP_R * 1.5
+  fPos[i*3] = (Math.random()-0.5) * 200
+  fPos[i*3+1] = Math.random() * 15
+  fPos[i*3+2] = (Math.random()-0.5) * 200
 }
 flourGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3))
 scene.add(new THREE.Points(flourGeo, new THREE.PointsMaterial({
@@ -422,8 +439,8 @@ function animate() {
   creatures.forEach((c) => {
     const w = c.userData.wander
     if (!w) return
-    c.position.x = w.ox + Math.sin(t * w.speed + w.phase) * 4
-    c.position.z = w.oz + Math.cos(t * w.speed * 0.7 + w.phase) * 3
+    c.position.x = w.ox + Math.sin(t * w.speed + w.phase) * 8
+    c.position.z = w.oz + Math.cos(t * w.speed * 0.7 + w.phase) * 6
   })
 
   // --- FLOUR drift ---
